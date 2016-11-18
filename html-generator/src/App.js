@@ -4,9 +4,6 @@ import templateObj from './templates';
 import editTemplate from './helpers';
 
 class Preview extends Component {
-  constructor(props) {
-    super(props);
-  }
 
   render() {
     return (
@@ -18,7 +15,18 @@ class Preview extends Component {
 class OptionsForm extends Component {
   constructor(props) {
     super(props);
-    this.state = {templateChoosen: "natBannerDesktopLinked", editedTemplate: '', options: templateObj.natBannerDesktopLinked.options, bgColor: '', textColor: '', bannerCopy: '', popHeaderCopy: '',disclaimerCopy: '', linkURL: ''};
+    this.state = {
+      templateChoosen: "natBannerDesktop",
+      editedTemplate: '',
+      options: templateObj.natBannerDesktop.options,
+      bgColor: '',
+      textColor: '',
+      bannerCopy: '',
+      popHeaderCopy: '',
+      disclaimerCopy: '',
+      linkURL: '',
+      codeOutput: ''
+    };
 
     this.handleTemplateChange = this.handleTemplateChange.bind(this);
     this.handleBgColorChange = this.handleBgColorChange.bind(this);
@@ -30,23 +38,56 @@ class OptionsForm extends Component {
     this.handleSubmit = this.handleSubmit.bind(this);
   }
 
+  inputValidation(whatToUpdate, value) {
+    switch(whatToUpdate) {
+      case "templateOutput":
+        let bool = true;
+        templateObj[this.state.templateChoosen].options.forEach((option)=>{
+          if(this.state[option] === '') {
+            bool = false;
+          }
+        });
+        return bool;
+      case "bgColorChange":
+        if(/#[0-9a-f]{6}$/i.test(value)) {
+          this.changeCallback();
+        }
+        break;
+      case "textColorChange":
+        if(/#[0-9a-f]{6}$/i.test(value)) {
+          this.changeCallback();
+        }
+        break;
+      case "bannerCopyChange":
+        break;
+      case "popHeaderCopyChange":
+        break;
+      case "disclaimerCopyChange":
+        break;
+      case "linkURLChange":
+        break;
+      default:
+        break;
+    }
+  }
+
   changeCallback() {
+    console.log("that ran");
     this.setState({editedTemplate: editTemplate(templateObj[this.state.templateChoosen].template, this.state.options, this.state)}, 
-                  ()=>{document.getElementById('bannerPrev').innerHTML = this.state.editedTemplate;});
+                  ()=>{this.setState({codeOutput: ''}); document.getElementById('bannerPrev').innerHTML = this.state.editedTemplate;});
   }
 
   handleTemplateChange(event) {
-    console.log(event.target.value);
     this.setState({templateChoosen: event.target.value});
-    this.setState({options: templateObj[event.target.value].options});
+    this.setState({options: templateObj[event.target.value].options}, this.changeCallback);
   }
 
   handleBgColorChange(event) {
-    this.setState({bgColor: event.target.value}, this.changeCallback);
+    this.setState({bgColor: event.target.value}, ()=>{this.inputValidation("bgColorChange", this.state.bgColor);});
   }
 
   handleTextColorChange(event) {
-    this.setState({textColor: event.target.value}, this.changeCallback);
+    this.setState({textColor: event.target.value}, ()=>{this.inputValidation("textColorChange", this.state.textColor);});
   }
 
   handleBannerCopyChange(event) {
@@ -66,7 +107,12 @@ class OptionsForm extends Component {
   }
 
   handleSubmit(event) {
-    alert("Options submitted: " + this.state.bgColor + " : " + this.state.textColor + " : " + this.state.bannerCopy + " : " + this.state.disclaimerCopy + " : " + this.state.linkURL + " : " + this.state.popHeaderCopy);
+    console.log(this.inputValidation("templateOutput", "placeholder"));
+    if(this.inputValidation("templateOutput", "placeholder")) {
+      this.setState({codeOutput: this.state.editedTemplate});
+    } else {
+      alert("Please fill all input fields");
+    }
     event.preventDefault();
   }
 
@@ -80,67 +126,90 @@ class OptionsForm extends Component {
       showDisclaimerCopy: false,
       showLinkURL: false
     };
-    let inputs = null;
 
-    //console.log(this.state.options);
-    this.state.options.forEach((option)=>{
-      switch(option) {
-        case "bgColor":
-          showOptions.showBgColor = true;
-          break;
-        case "TextColor":
-          showOptions.showTextColor = true;
-          break;
-        case "bannerCopy":
-          showOptions.showBannerCopy = true;
-          break;
-        case "popHeaderCopy":
-          showOptions.showPopHeaderCopy = true;
-          break;
-        case "disclaimerCopy":
-          showOptions.showDisclaimerCopy = true;
-          break;
-        case "linkURL":
-          showOptions.showLinkURL = true;
-          break;
-        default:
-          break;
-      }
-    });
-
-    if(showOptions.showLinkURL) {
-      inputs = <div>
-                Link URL:
-                <input type="text" value={this.state.linkURL} onChange={this.handleLinkURLChange} />
-                </div>;
+    if(this.state.options.length > 0) {
+      this.state.options.forEach((option)=>{
+        switch(option) {
+          case "bgColor":
+            showOptions.showBgColor = true;
+            break;
+          case "textColor":
+            showOptions.showTextColor = true;
+            break;
+          case "bannerCopy":
+            showOptions.showBannerCopy = true;
+            break;
+          case "popHeaderCopy":
+            showOptions.showPopHeaderCopy = true;
+            break;
+          case "disclaimerCopy":
+            showOptions.showDisclaimerCopy = true;
+            break;
+          case "linkURL":
+            showOptions.showLinkURL = true;
+            break;
+          default:
+            break;
+        }
+      });
     }
-
 
     return (
       <div>
-        <form onSubmit={this.handleSubmit}>
+        <form>
 
           <select value={this.state.templateChoosen} onChange={this.handleTemplateChange} >
             <option value="natBannerDesktop" >Naturalizer (no link)</option>
             <option value="natBannerDesktopLinked" >Naturalizer (link)</option>
           </select><br/>
 
-          Background Color:
-          <input type="text" value={this.state.bgColor} onChange={this.handleBgColorChange} />
-          Text Color:
-          <input type="text" value={this.state.textColor} onChange={this.handleTextColorChange} />
-          Banner Copy:
-          <input type="text" value={this.state.bannerCopy} onChange={this.handleBannerCopyChange} />
-          Pop Header Copy:
-          <input type="text" value={this.state.popHeaderCopy} onChange={this.handlePopHeaderCopyChange} />
-          Disclaimer:
-          <input type="text" value={this.state.disclaimerCopy} onChange={this.handleDisclaimerCopyChange} />
-          {inputs}
+          {showOptions.showBgColor &&
+          <div>
+            Background Color:
+            <input type="text" value={this.state.bgColor} onChange={this.handleBgColorChange} />
+          </div>}
+          
+          {showOptions.showTextColor &&
+          <div>
+            Text Color:
+            <input type="text" value={this.state.textColor} onChange={this.handleTextColorChange} />
+          </div>}
+          
+          {showOptions.showBannerCopy &&
+          <div>
+            Banner Copy:
+            <input type="text" value={this.state.bannerCopy} onChange={this.handleBannerCopyChange} />
+          </div>}
 
+          {showOptions.showPopHeaderCopy &&
+          <div>
+            Pop Header Copy:
+            <input type="text" value={this.state.popHeaderCopy} onChange={this.handlePopHeaderCopyChange} />
+          </div>}
 
-          <input type="submit" value="Submit" />
+          {showOptions.showDisclaimerCopy &&
+          <div>
+            Disclaimer:
+            <input type="text" value={this.state.disclaimerCopy} onChange={this.handleDisclaimerCopyChange} />
+          </div>}
+          
+          {showOptions.showLinkURL && 
+          <div>
+            Link URL:
+            <input type="text" value={this.state.linkURL} onChange={this.handleLinkURLChange} />
+          </div>}
+
         </form>
-        <Preview />
+
+        <Preview templatePrev={templateObj[this.state.templateChoosen].template} />
+
+        <form onSubmit={this.handleSubmit}>
+
+          <textarea value={this.state.codeOutput} />
+          <input type="submit" value="Get Code" />
+
+        </form>
+
       </div>
     );
   }
