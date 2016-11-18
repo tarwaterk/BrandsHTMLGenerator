@@ -72,9 +72,8 @@ class OptionsForm extends Component {
   }
 
   changeCallback() {
-    console.log("that ran");
     this.setState({editedTemplate: editTemplate(templateObj[this.state.templateChoosen].template, this.state.options, this.state)}, 
-                  ()=>{this.setState({codeOutput: ''}); document.getElementById('bannerPrev').innerHTML = this.state.editedTemplate;});
+                  ()=>{this.setState({codeOutput: ''}); document.getElementById('bannerPrev').innerHTML = templateObj[this.state.templateChoosen].siteStyles + this.state.editedTemplate;});
   }
 
   handleTemplateChange(event) {
@@ -161,6 +160,7 @@ class OptionsForm extends Component {
           <select value={this.state.templateChoosen} onChange={this.handleTemplateChange} >
             <option value="natBannerDesktop" >Naturalizer (no link)</option>
             <option value="natBannerDesktopLinked" >Naturalizer (link)</option>
+            <option value="drsBanner" >Dr. Scholl's</option>
           </select><br/>
 
           {showOptions.showBgColor &&
