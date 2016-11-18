@@ -6,7 +6,6 @@ import editTemplate from './helpers';
 class Preview extends Component {
   constructor(props) {
     super(props);
-    this.state = {prevCode: this.props.templateChoosen};
   }
 
   render() {
@@ -19,8 +18,9 @@ class Preview extends Component {
 class OptionsForm extends Component {
   constructor(props) {
     super(props);
-    this.state = {templateChoosen: templateObj.natBannerDesktop.template, editedTemplate: '', options: templateObj.natBannerDesktop.options, bgColor: '', textColor: '', bannerCopy: '', popHeaderCopy: '',disclaimerCopy: '', linkURL: ''};
+    this.state = {templateChoosen: "natBannerDesktopLinked", editedTemplate: '', options: templateObj.natBannerDesktopLinked.options, bgColor: '', textColor: '', bannerCopy: '', popHeaderCopy: '',disclaimerCopy: '', linkURL: ''};
 
+    this.handleTemplateChange = this.handleTemplateChange.bind(this);
     this.handleBgColorChange = this.handleBgColorChange.bind(this);
     this.handleTextColorChange = this.handleTextColorChange.bind(this);
     this.handleBannerCopyChange = this.handleBannerCopyChange.bind(this);
@@ -31,8 +31,14 @@ class OptionsForm extends Component {
   }
 
   changeCallback() {
-    this.setState({editedTemplate: editTemplate(this.state.templateChoosen, this.state.options, this.state)}, 
+    this.setState({editedTemplate: editTemplate(templateObj[this.state.templateChoosen].template, this.state.options, this.state)}, 
                   ()=>{document.getElementById('bannerPrev').innerHTML = this.state.editedTemplate;});
+  }
+
+  handleTemplateChange(event) {
+    console.log(event.target.value);
+    this.setState({templateChoosen: event.target.value});
+    this.setState({options: templateObj[event.target.value].options});
   }
 
   handleBgColorChange(event) {
@@ -65,9 +71,60 @@ class OptionsForm extends Component {
   }
 
   render() {
+
+    let showOptions = {
+      showBgColor: false,
+      showTextColor: false,
+      showBannerCopy: false,
+      showPopHeaderCopy: false,
+      showDisclaimerCopy: false,
+      showLinkURL: false
+    };
+    let inputs = null;
+
+    //console.log(this.state.options);
+    this.state.options.forEach((option)=>{
+      switch(option) {
+        case "bgColor":
+          showOptions.showBgColor = true;
+          break;
+        case "TextColor":
+          showOptions.showTextColor = true;
+          break;
+        case "bannerCopy":
+          showOptions.showBannerCopy = true;
+          break;
+        case "popHeaderCopy":
+          showOptions.showPopHeaderCopy = true;
+          break;
+        case "disclaimerCopy":
+          showOptions.showDisclaimerCopy = true;
+          break;
+        case "linkURL":
+          showOptions.showLinkURL = true;
+          break;
+        default:
+          break;
+      }
+    });
+
+    if(showOptions.showLinkURL) {
+      inputs = <div>
+                Link URL:
+                <input type="text" value={this.state.linkURL} onChange={this.handleLinkURLChange} />
+                </div>;
+    }
+
+
     return (
       <div>
         <form onSubmit={this.handleSubmit}>
+
+          <select value={this.state.templateChoosen} onChange={this.handleTemplateChange} >
+            <option value="natBannerDesktop" >Naturalizer (no link)</option>
+            <option value="natBannerDesktopLinked" >Naturalizer (link)</option>
+          </select><br/>
+
           Background Color:
           <input type="text" value={this.state.bgColor} onChange={this.handleBgColorChange} />
           Text Color:
@@ -78,13 +135,12 @@ class OptionsForm extends Component {
           <input type="text" value={this.state.popHeaderCopy} onChange={this.handlePopHeaderCopyChange} />
           Disclaimer:
           <input type="text" value={this.state.disclaimerCopy} onChange={this.handleDisclaimerCopyChange} />
-          Link URL:
-          <input type="text" value={this.state.linkURL} onChange={this.handleLinkURLChange} />
+          {inputs}
 
 
           <input type="submit" value="Submit" />
         </form>
-        <Preview templateChoosen={this.state.templateChoosen} />
+        <Preview />
       </div>
     );
   }
